@@ -28,7 +28,7 @@ TrueForge: `npx @truefoundry/trueforge` → http://localhost:8790. Agent spec: `
 Substantive changes go through a PR. Direct pushes to `main` do not count.
 
 - Representative PR: https://github.com/kiankyars/warren/pull/1
-- What Qodo surfaced: Highs on `last_active` ignoring new messages, ingest keeping a stale plan, plus mediums on commit-before-write, unsourced research, tests mutating the checkout, unlocked concurrent state, and bad `Content-Length`. All of those were fixed on the same PR.
+- What Qodo surfaced: Highs on `last_active` ignoring new messages, ingest keeping a stale plan, and the static demo mixing ms vs seconds. Mediums on commit-before-write, unsourced research, tests mutating the checkout, unlocked concurrent state, bad `Content-Length`, Pages deploying from `feat/core`, and `fcntl` on Windows. All of those were fixed on the same PR.
 - Follow-up review: same PR, second `/agentic_review` after the fixes.
 
 ## License

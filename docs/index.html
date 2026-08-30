@@ -150,8 +150,8 @@
         const sources = [...new Set(hits.map((h) => h.path))];
         const clip = hits.map((h) => h.text).filter(Boolean).slice(0, 2).join(" ");
         const content = clip || `Open the ${hole.message_count}-message thread and write the next concrete step.`;
-        state.insights.push({ hole_id: hole.id, content, sources, created_at: Date.now() });
-        hole.last_researched_at = Date.now();
+        state.insights.push({ hole_id: hole.id, content, sources, created_at: Date.now() / 1000 });
+        hole.last_researched_at = Date.now() / 1000;
         hole.stale = false;
       }
       state.plan = null;

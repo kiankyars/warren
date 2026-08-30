@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-import fcntl
 import json
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 
 from warren.models import Conversation, Hole, Insight, Message, Plan, PlanItem, State
 
@@ -118,11 +122,13 @@ def state_lock(root: Path):
     path = root / "store" / ".lock"
     path.parent.mkdir(parents=True, exist_ok=True)
     fh = path.open("a+")
-    fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+    if fcntl is not None:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
     try:
         yield
     finally:
-        fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        if fcntl is not None:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
         fh.close()
 
 

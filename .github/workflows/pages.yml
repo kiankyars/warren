@@ -1,7 +1,7 @@
 name: pages
 on:
   push:
-    branches: [main, feat/core]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
