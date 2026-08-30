@@ -1,0 +1,63 @@
+[
+  {
+    "id": "c-grpo-1",
+    "title": "GRPO vs PPO for a small policy",
+    "create_time": 1756000000,
+    "mapping": {
+      "m1": {"message": {"author": {"role": "user"}, "content": {"parts": ["I keep bouncing between GRPO and PPO for a 1B policy. Last time I stopped at the KL term."]}, "create_time": 1756000000}},
+      "m2": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Write down the KL penalty you used and whether the reference policy was frozen."]}, "create_time": 1756000100}},
+      "m3": {"message": {"author": {"role": "user"}, "content": {"parts": ["Frozen ref, 0.05 KL, but I never plotted reward vs KL. I was going to read the DeepSeekMath GRPO note."]}, "create_time": 1756000200}},
+      "m4": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Then the unfinished step is that plot, not another algorithm swap."]}, "create_time": 1756000300}}
+    }
+  },
+  {
+    "id": "c-grpo-2",
+    "title": "GRPO implementation checklist",
+    "create_time": 1756080000,
+    "mapping": {
+      "m1": {"message": {"author": {"role": "user"}, "content": {"parts": ["Checklist: group size, advantage normalization, delayed ref update."]}, "create_time": 1756080000}},
+      "m2": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Start with group size 8 and normalize advantages inside the group."]}, "create_time": 1756080100}},
+      "m3": {"message": {"author": {"role": "user"}, "content": {"parts": ["I still have not implemented the delayed ref. That's where I left it."]}, "create_time": 1756080200}}
+    }
+  },
+  {
+    "id": "c-jp-1",
+    "title": "Japanese immersion Anki",
+    "create_time": 1755900000,
+    "mapping": {
+      "m1": {"message": {"author": {"role": "user"}, "content": {"parts": ["I keep making Anki cards from YouTube and never reviewing them."]}, "create_time": 1755900000}},
+      "m2": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Cap new cards at 15 and review before you mine."]}, "create_time": 1755900100}},
+      "m3": {"message": {"author": {"role": "user"}, "content": {"parts": ["I mined 40 yesterday. Review is at 220 due."]}, "create_time": 1755900200}},
+      "m4": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Stop mining until due is under 50."]}, "create_time": 1755900300}}
+    }
+  },
+  {
+    "id": "c-game-1",
+    "title": "afterclock rules draft",
+    "create_time": 1755800000,
+    "mapping": {
+      "m1": {"message": {"author": {"role": "user"}, "content": {"parts": ["Need a clean win condition for afterclock on 5x5. Draws are too common."]}, "create_time": 1755800000}},
+      "m2": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Try a tempo clock that scores leftover moves instead of extra capture rules."]}, "create_time": 1755800100}},
+      "m3": {"message": {"author": {"role": "user"}, "content": {"parts": ["I wrote none of that into the rules PDF."]}, "create_time": 1755800200}}
+    }
+  },
+  {
+    "id": "c-grpo-3",
+    "title": "GRPO group size 8",
+    "create_time": 1756100000,
+    "mapping": {
+      "m1": {"message": {"author": {"role": "user"}, "content": {"parts": ["Is group size 8 actually enough for a 1B run or am I wasting rollouts?"]}, "create_time": 1756100000}},
+      "m2": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Enough to start. Do not raise group size until the KL plot exists."]}, "create_time": 1756100100}}
+    }
+  },
+  {
+    "id": "c-jp-2",
+    "title": "Japanese review before YouTube",
+    "create_time": 1756120000,
+    "mapping": {
+      "m1": {"message": {"author": {"role": "user"}, "content": {"parts": ["I keep opening YouTube first and the due pile grows."]}, "create_time": 1756120000}},
+      "m2": {"message": {"author": {"role": "assistant"}, "content": {"parts": ["Review is the gate. No mining, no immersion video, until due < 50."]}, "create_time": 1756120100}},
+      "m3": {"message": {"author": {"role": "user"}, "content": {"parts": ["Due is 220. I have not reviewed today."]}, "create_time": 1756120200}}
+    }
+  }
+]

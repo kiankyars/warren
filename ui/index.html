@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Warren</title>
+  <style>
+    :root { --bg:#0b0d10; --panel:#14181e; --line:#2a313c; --text:#e8edf4; --muted:#8b96a8; --ok:#3dd68c; --wait:#f5c14a; --accent:#7aa2ff; --fail:#ff5d5d; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; min-height:100%; background:var(--bg); color:var(--text); font:14px/1.45 ui-sans-serif, system-ui, sans-serif; }
+    header { display:flex; justify-content:space-between; padding:16px 22px; border-bottom:1px solid var(--line); }
+    header strong { letter-spacing:.08em; text-transform:uppercase; font-size:12px; }
+    a { color:var(--accent); }
+    main { display:grid; grid-template-columns:1fr 1fr 1.1fr; gap:14px; padding:14px; }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+    h2 { margin:0 0 12px; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+    .hole { border:1px solid var(--line); border-radius:10px; padding:10px; margin-bottom:8px; }
+    .stale { color:var(--wait); font-size:11px; letter-spacing:.08em; }
+    .fresh { color:var(--ok); font-size:11px; letter-spacing:.08em; }
+    button { background:var(--accent); color:#08101f; border:0; border-radius:8px; padding:8px 10px; font-weight:700; cursor:pointer; margin:0 8px 8px 0; }
+    button.danger { background:var(--fail); color:#1a0505; }
+    button:disabled { opacity:.4; cursor:not-allowed; }
+    pre, .item { font:12px/1.4 ui-monospace, Menlo, monospace; color:var(--muted); white-space:pre-wrap; }
+    .item { margin:0 0 10px; color:var(--text); }
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>Warren</strong> · unfinished threads, researched overnight</div>
+    <span><a href="http://localhost:8790" target="_blank" rel="noreferrer">TrueForge</a></span>
+  </header>
+  <main>
+    <section>
+      <h2>Holes</h2>
+      <button id="ingest">Ingest export</button>
+      <div id="holes"></div>
+    </section>
+    <section>
+      <h2>Insights</h2>
+      <div id="insights"></div>
+    </section>
+    <section>
+      <h2>Morning plan</h2>
+      <button id="draft">Draft plan</button>
+      <button class="danger" id="commit" disabled>Commit plan</button>
+      <div id="plan"></div>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    function esc(v) {
+      return String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    }
+    let state = null;
+    async function api(path, body) {
+      const res = await fetch(path, {
+        method: body ? "POST" : "GET",
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+    function render(s) {
+      state = s;
+      $("holes").innerHTML = (s.holes || []).map((h) => `
+        <div class="hole">
+          <div>${esc(h.name)}</div>
+          <div class="${h.stale ? "stale" : "fresh"}">${h.stale ? "NEEDS RESEARCH" : "RESEARCHED"} · ${esc(h.message_count)} msgs · ${esc(h.conversations)} chats</div>
+          <div style="color:#8b96a8">${esc(h.id)}</div>
+        </div>`).join("") || "<p>Ingest the export.</p>";
+      $("insights").innerHTML = (s.insights || []).map((i) => `
+        <div class="item">${esc(i.hole_id)} — ${esc(i.content)}<br><span style="color:#8b96a8">${esc((i.sources||[]).join(", "))}</span></div>
+      `).join("") || "<p>TrueForge records these after corpus search.</p>";
+      const plan = s.plan;
+      $("commit").disabled = !(plan && plan.items && plan.items.length && !plan.committed);
+      if (!plan) { $("plan").textContent = "No draft."; return; }
+      $("plan").innerHTML = `<div class="${plan.committed ? "fresh" : "stale"}">${plan.committed ? "COMMITTED" : "DRAFT"} · ${esc(plan.date)}</div>` +
+        plan.items.map((it, i) => `<div class="item">${i+1}. ${esc(it.hole_name)} — ${esc(it.action)}</div>`).join("");
+    }
+    $("ingest").onclick = async () => render(await api("/api/ingest", {}));
+    $("draft").onclick = async () => render(await api("/api/draft-plan", {}));
+    $("commit").onclick = async () => render(await api("/api/commit-plan", {}));
+    api("/api/status").then(render).catch((e) => { $("plan").textContent = e.message; });
+  </script>
+</body>
+</html>

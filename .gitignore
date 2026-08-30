@@ -8,3 +8,6 @@ dist/
 .DS_Store
 .env
 store/state.json
+store/plan-*.md
+store/*.tmp
+store/.lock
