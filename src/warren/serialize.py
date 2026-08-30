@@ -40,7 +40,11 @@ def snapshot(root=None) -> dict:
                 for it in state.plan.items
             ],
         },
-        "plan_path": str(base / "store" / f"plan-{state.plan.date}.md") if state.plan and state.plan.committed else None,
+        "plan_path": (
+            str(base / "store" / f"plan-{state.plan.date}.md")
+            if state.plan and state.plan.committed and (base / "store" / f"plan-{state.plan.date}.md").exists()
+            else None
+        ),
     }
 
 

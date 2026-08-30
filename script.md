@@ -73,7 +73,7 @@ Warren runs as a TrueForge agent. The harness calls MCP tools to ingest the expo
 
 **How did you use Qodo in your project?**
 
-Every substantive change is a GitHub PR reviewed by Qodo before merge. Direct pushes to `main` do not count. On https://github.com/kiankyars/warren/pull/1, `/agentic_review` ran and Qodo flagged Highs (stale-hole timestamps, ingest leaving an old plan, tests mutating the repo store). Highs get fixed or dismissed in-thread, then a follow-up review. README has `## Qodo Code Review Evidence`.
+Every substantive change is a GitHub PR reviewed by Qodo before merge. Direct pushes to `main` do not count. On https://github.com/kiankyars/warren/pull/1, Qodo flagged Highs (stale-hole timestamps, ingest leaving an old plan, tests mutating the checkout). Those were fixed on the same PR, then a follow-up `/agentic_review`, then merge. README has `## Qodo Code Review Evidence`.
 
 **How did you use Bright Data in your project?**
 

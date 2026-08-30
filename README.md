@@ -27,9 +27,9 @@ TrueForge: `npx @truefoundry/trueforge` → http://localhost:8790. Agent spec: `
 
 Substantive changes go through a PR. Direct pushes to `main` do not count.
 
-- Representative PR: _after first reviewed merge_
-- What Qodo surfaced: _after the review thread exists_
-- Follow-up review: same PR, second `/agentic_review`
+- Representative PR: https://github.com/kiankyars/warren/pull/1
+- What Qodo surfaced: Highs on `last_active` ignoring new messages, ingest keeping a stale plan, plus mediums on commit-before-write, unsourced research, tests mutating the checkout, unlocked concurrent state, and bad `Content-Length`. All of those were fixed on the same PR.
+- Follow-up review: same PR, second `/agentic_review` after the fixes.
 
 ## License
 

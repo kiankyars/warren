@@ -44,12 +44,23 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlparse(self.path).path
-        length = int(self.headers.get("Content-Length") or 0)
+        raw_len = self.headers.get("Content-Length") or "0"
+        try:
+            length = int(raw_len)
+        except ValueError:
+            self._json(400, {"error": "invalid content-length"})
+            return
+        if length < 0 or length > 1_000_000:
+            self._json(400, {"error": "invalid content-length"})
+            return
         raw = self.rfile.read(length) if length else b"{}"
         try:
             body = json.loads(raw.decode() or "{}")
         except json.JSONDecodeError:
             self._json(400, {"error": "invalid json"})
+            return
+        if not isinstance(body, dict):
+            self._json(400, {"error": "json object required"})
             return
         try:
             if path == "/api/ingest":

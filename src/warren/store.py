@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import fcntl
 import json
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -72,7 +74,7 @@ def extract_holes(conversations: list[Conversation]) -> list[Hole]:
         buckets.setdefault(key, []).append(conv)
     holes: list[Hole] = []
     for key, group in buckets.items():
-        last_active = max((c.created_at for c in group if c.created_at), default=None)
+        last_active = max((t for c in group if (t := _last_activity(c))), default=None)
         holes.append(
             Hole(
                 id=key.replace(" ", "-"),
@@ -84,6 +86,44 @@ def extract_holes(conversations: list[Conversation]) -> list[Hole]:
         )
     holes.sort(key=lambda h: (-h.message_count, h.name))
     return holes
+
+
+def _last_activity(conv: Conversation) -> datetime | None:
+    times = [m.created_at for m in conv.messages if m.created_at]
+    if conv.created_at:
+        times.append(conv.created_at)
+    return max(times) if times else None
+
+
+def corpus_sources(root: Path, sources: list[str]) -> list[str]:
+    corpus = (root / "corpus").resolve()
+    if not sources:
+        raise ValueError("research requires at least one corpus/ path")
+    out: list[str] = []
+    for src in sources:
+        raw = Path(src)
+        resolved = raw.resolve() if raw.is_absolute() else (root / src).resolve()
+        try:
+            resolved.relative_to(corpus)
+        except ValueError:
+            raise ValueError(f"source must be under corpus/: {src}") from None
+        if not resolved.is_file():
+            raise ValueError(f"missing corpus file: {src}")
+        out.append(str(resolved.relative_to(root)))
+    return out
+
+
+@contextmanager
+def state_lock(root: Path):
+    path = root / "store" / ".lock"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fh = path.open("a+")
+    fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+    try:
+        yield
+    finally:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        fh.close()
 
 
 def _topic_key(title: str) -> str:
@@ -202,4 +242,6 @@ def save_state(root: Path, state: State) -> None:
             ],
         },
     }
-    path.write_text(json.dumps(payload, indent=2) + "\n")
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(payload, indent=2) + "\n")
+    tmp.replace(path)
