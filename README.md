@@ -8,6 +8,8 @@ TrueForge runs the cycle (MCP, sandbox, subagents, approval on `commit_plan`). Q
 
 ## Run
 
+Live demo (static, no TrueForge): https://kiankyars.github.io/warren/
+
 ```sh
 uv sync --extra dev --extra mcp
 uv run pytest -q

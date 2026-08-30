@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Warren</title>
+  <style>
+    :root { --bg:#0b0d10; --panel:#14181e; --line:#2a313c; --text:#e8edf4; --muted:#8b96a8; --ok:#3dd68c; --wait:#f5c14a; --accent:#7aa2ff; --fail:#ff5d5d; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; min-height:100%; background:var(--bg); color:var(--text); font:14px/1.45 ui-sans-serif, system-ui, sans-serif; }
+    header { display:flex; justify-content:space-between; align-items:center; padding:16px 22px; border-bottom:1px solid var(--line); gap:12px; }
+    header strong { letter-spacing:.08em; text-transform:uppercase; font-size:12px; }
+    header span { color:var(--muted); font-size:13px; }
+    a { color:var(--accent); }
+    main { display:grid; grid-template-columns:1fr 1fr 1.1fr; gap:14px; padding:14px; }
+    @media (max-width: 900px) { main { grid-template-columns:1fr; } }
+    section { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+    h2 { margin:0 0 12px; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+    .hole { border:1px solid var(--line); border-radius:10px; padding:10px; margin-bottom:8px; }
+    .stale { color:var(--wait); font-size:11px; letter-spacing:.08em; }
+    .fresh { color:var(--ok); font-size:11px; letter-spacing:.08em; }
+    button { background:var(--accent); color:#08101f; border:0; border-radius:8px; padding:8px 10px; font-weight:700; cursor:pointer; margin:0 8px 8px 0; }
+    button.danger { background:var(--fail); color:#1a0505; }
+    button:disabled { opacity:.4; cursor:not-allowed; }
+    .item { font:12px/1.4 ui-monospace, Menlo, monospace; margin:0 0 10px; }
+    .err { color:var(--fail); }
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>Warren</strong> · unfinished ChatGPT threads</div>
+    <span>Synthetic export in-repo. Commit is the irreversible step.</span>
+  </header>
+  <main>
+    <section>
+      <h2>Holes</h2>
+      <button id="ingest">Load export</button>
+      <button id="research">Research stale</button>
+      <div id="holes"></div>
+    </section>
+    <section>
+      <h2>Insights</h2>
+      <div id="insights"></div>
+    </section>
+    <section>
+      <h2>Morning plan</h2>
+      <button id="draft">Draft plan</button>
+      <button class="danger" id="commit" disabled>Commit plan</button>
+      <div id="plan"></div>
+    </section>
+  </main>
+  <script>
+    const STOP = new Set("a an the of and or to for in on vs with how what why my".split(" "));
+    const CORPUS = ["corpus/grpo.md", "corpus/japanese.md", "corpus/afterclock.md"];
+    const $ = (id) => document.getElementById(id);
+    const esc = (v) => String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+
+    let exportData = null;
+    let corpus = [];
+    let state = { holes: [], insights: [], plan: null };
+
+    function topicKey(title) {
+      const keep = title.split(/\s+/).map((t) => t.toLowerCase().replace(/[.,:?!]/g, "")).filter((t) => t.length > 2 && !STOP.has(t));
+      return keep[0] || title.toLowerCase();
+    }
+
+    function parseExport(raw) {
+      return raw.map((conv) => {
+        const messages = [];
+        for (const node of Object.values(conv.mapping || {})) {
+          const msg = (node && node.message) || {};
+          const role = (msg.author || {}).role;
+          if (role !== "user" && role !== "assistant") continue;
+          const text = ((msg.content || {}).parts || []).filter((p) => typeof p === "string" && p.trim()).join("\n");
+          if (!text) continue;
+          messages.push({ role, content: text, created_at: msg.create_time || conv.create_time || 0 });
+        }
+        return { id: conv.id, title: conv.title || "Untitled", created_at: conv.create_time || 0, messages };
+      });
+    }
+
+    function extractHoles(conversations) {
+      const buckets = {};
+      for (const c of conversations) {
+        if (c.messages.length < 2) continue;
+        const key = topicKey(c.title);
+        (buckets[key] ||= []).push(c);
+      }
+      const researched = Object.fromEntries(state.holes.map((h) => [h.id, h.last_researched_at]));
+      return Object.entries(buckets).map(([id, group]) => {
+        const last_active = Math.max(...group.flatMap((c) => [c.created_at || 0, ...c.messages.map((m) => m.created_at || 0)]));
+        const last_researched_at = researched[id] || null;
+        return {
+          id,
+          name: group.reduce((a, b) => (a.title.length >= b.title.length ? a : b)).title,
+          conversation_ids: group.map((c) => c.id),
+          conversations: group.length,
+          message_count: group.reduce((n, c) => n + c.messages.length, 0),
+          last_active,
+          last_researched_at,
+          stale: last_researched_at == null || last_researched_at < last_active,
+        };
+      }).sort((a, b) => b.message_count - a.message_count);
+    }
+
+    function search(query) {
+      const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+      const hits = [];
+      for (const doc of corpus) {
+        doc.text.split("\n").forEach((line, i) => {
+          if (terms.some((t) => line.toLowerCase().includes(t))) {
+            hits.push({ path: doc.path, line: i + 1, text: line.trim() });
+          }
+        });
+      }
+      return hits.slice(0, 8);
+    }
+
+    function render() {
+      $("holes").innerHTML = state.holes.map((h) => `
+        <div class="hole">
+          <div>${esc(h.name)}</div>
+          <div class="${h.stale ? "stale" : "fresh"}">${h.stale ? "NEEDS RESEARCH" : "RESEARCHED"} · ${esc(h.message_count)} msgs · ${esc(h.conversations)} chats</div>
+        </div>`).join("") || "<p>Load the export.</p>";
+      $("insights").innerHTML = state.insights.map((i) => `
+        <div class="item">${esc(i.hole_id)} — ${esc(i.content)}<br><span style="color:#8b96a8">${esc((i.sources || []).join(", "))}</span></div>
+      `).join("") || "<p>Research stale holes against the corpus.</p>";
+      const plan = state.plan;
+      $("commit").disabled = !(plan && plan.items && plan.items.length && !plan.committed);
+      if (!plan) { $("plan").textContent = "No draft."; return; }
+      $("plan").innerHTML = `<div class="${plan.committed ? "fresh" : "stale"}">${plan.committed ? "COMMITTED" : "DRAFT"} · ${esc(plan.date)}</div>` +
+        plan.items.map((it, i) => `<div class="item">${i + 1}. ${esc(it.hole_name)} — ${esc(it.action)}</div>`).join("");
+    }
+
+    async function boot() {
+      exportData = parseExport(await (await fetch("conversations/export.json")).json());
+      corpus = await Promise.all(CORPUS.map(async (path) => ({ path, text: await (await fetch(path)).text() })));
+      ingest();
+    }
+
+    function ingest() {
+      state.holes = extractHoles(exportData);
+      state.plan = null;
+      render();
+    }
+
+    function research() {
+      for (const hole of state.holes.filter((h) => h.stale)) {
+        const hits = search(hole.id);
+        const sources = [...new Set(hits.map((h) => h.path))];
+        const clip = hits.map((h) => h.text).filter(Boolean).slice(0, 2).join(" ");
+        const content = clip || `Open the ${hole.message_count}-message thread and write the next concrete step.`;
+        state.insights.push({ hole_id: hole.id, content, sources, created_at: Date.now() });
+        hole.last_researched_at = Date.now();
+        hole.stale = false;
+      }
+      state.plan = null;
+      render();
+    }
+
+    function draft() {
+      const latest = {};
+      for (const i of state.insights) latest[i.hole_id] = i;
+      const items = state.holes.map((h) => {
+        const insight = latest[h.id];
+        return {
+          hole_id: h.id,
+          hole_name: h.name,
+          action: insight ? insight.content : `Open the ${h.message_count}-message thread on ${h.name} and write the next concrete step.`,
+          sources: insight ? insight.sources : [],
+          score: h.message_count + (insight ? 10 : 0),
+        };
+      }).sort((a, b) => b.score - a.score);
+      state.plan = { date: new Date().toISOString().slice(0, 10), committed: false, items };
+      render();
+    }
+
+    function commit() {
+      if (!state.plan) return;
+      state.plan.committed = true;
+      render();
+    }
+
+    $("ingest").onclick = ingest;
+    $("research").onclick = research;
+    $("draft").onclick = draft;
+    $("commit").onclick = commit;
+    boot().catch((e) => { $("plan").innerHTML = `<p class="err">${esc(e.message)}</p>`; });
+  </script>
+</body>
+</html>
