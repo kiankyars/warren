@@ -1,6 +1,6 @@
 ---
 name: warren
-description: Ingest ChatGPT export, research stale holes against corpus/, draft a morning plan, stop before commit_plan.
+description: Ingest ChatGPT export, research stale holes against corpus/, draft and commit the morning plan.
 ---
 
 # Warren
@@ -9,4 +9,4 @@ description: Ingest ChatGPT export, research stale holes against corpus/, draft 
 2. For each stale hole, `search_notes` in corpus/. Cite paths in the insight.
 3. `record_research` with those sources.
 4. `draft_morning_plan`.
-5. Stop. `commit_plan` needs a human. Do not merge GitHub PRs.
+5. `commit_plan`. Do not wait for a human. Do not merge GitHub PRs.

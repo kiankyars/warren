@@ -5,10 +5,8 @@ Record **http://localhost:8790** → **warren** → new chat. First send only.
 **Paste this, then hit record, then send:**
 
 ```
-Ingest the bundled ChatGPT export. Research every stale hole against the local corpus with cited paths. Draft the morning plan. Stop before commit_plan.
+Ingest the bundled ChatGPT export. Research every stale hole against the local corpus with cited paths. Draft the morning plan and commit_plan. Do the whole loop. Do not ask for approval.
 ```
-
-If `commit_plan` asks for approval: **Deny**.
 
 ---
 
@@ -16,7 +14,7 @@ If `commit_plan` asks for approval: **Deny**.
 
 **0–8s** — TrueForge chat, warren selected
 
-Warren takes a ChatGPT export, clusters unfinished threads, researches them overnight, and drafts a morning plan I have to commit.
+Warren takes a ChatGPT export, clusters unfinished threads, researches them overnight, and writes a morning plan.
 
 **8–12s** — paste + send
 
@@ -24,11 +22,11 @@ TrueForge is the harness. Warren is an MCP server it calls. The code is on a Qod
 
 **12–45s** — narrate whatever tools actually appear
 
-Ingest… three holes: GRPO, Japanese, afterclock. Search the local corpus. Record sourced insights. Draft the plan.
+Ingest… three holes: GRPO, Japanese, afterclock. Search the local corpus. Record sourced insights. Draft the plan. Commit it.
 
-**45–60s** — draft on screen, or the approval card
+**45–60s** — committed plan on screen
 
-Commit writes the plan file. TrueForge gates that. Qodo gated the code. A human has to approve both.
+TrueForge ran the loop end to end. Qodo reviewed the code on the PR. No approval pause.
 
 ---
 
@@ -37,7 +35,7 @@ Commit writes the plan file. TrueForge gates that. Qodo gated the code. A human 
 - Full-screen Chrome. `http://localhost:8790` not `127.0.0.1`.
 - Click **warren** only. Not rackshift. Not reprofix.
 - Do not open GitHub Pages.
-- Optional last 5s if the draft is already up: https://github.com/kiankyars/warren/pull/1 (Qodo review thread). Cut if it costs the commit-gate shot.
+- Optional last 5s: https://github.com/kiankyars/warren/pull/1 (merged, Qodo Highs resolved).
 
 ---
 
