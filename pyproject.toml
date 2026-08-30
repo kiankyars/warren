@@ -1,0 +1,22 @@
+[project]
+name = "warren"
+version = "0.1.0"
+description = "Research unfinished ChatGPT threads overnight. A human commits the morning plan."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.13,<2"]
+dev = ["pytest>=8.3"]
+
+[project.scripts]
+warren = "warren.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
